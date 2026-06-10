@@ -1,0 +1,113 @@
+/* I hate knitting :) 
+
+  Why this exists:
+  pagedown's default-page.css suppresses first-page top headers and contains
+  page counter resets for front-page/main chapter layouts. These rules override
+  that default behavior for this guide.
+*/
+
+:root {
+  --pagedjs-width: 8.5in;
+  --pagedjs-height: 11in;
+  --running-title-width: 3in;
+}
+
+/* Guard against pagedown's default page counter resets. */
+.front-page,
+.main .level1:first-child h1 {
+  counter-reset: none !important;
+}
+
+/* The group marker must stay in the normal flow so Paged.js can read it. */
+.group-string {
+  string-set: group content(text);
+  height: 0;
+  line-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  color: transparent;
+  font-size: 1px;
+}
+
+
+
+/* Base page header: title left, page number center, group right. */
+@page {
+  size: letter;
+  margin: 0.3in;
+  margin-top: 0.45in;
+
+  @top-right {
+    content: "Whitebark Pine Pest Guide";
+    font-size: 11pt;
+  }
+
+  @top-center {
+    content: "Pg." counter(page);
+    font-size: 11pt;
+  }
+
+  @top-left {
+    content: string(group);
+    font-size: 11pt;
+  }
+}
+
+/* pagedown default-page.css specifically blanks top boxes on first pages. */
+@page :first {
+  @top-right {
+    content: "Whitebark Pine Pest Guide pg."counter(page);
+    font-size: 11pt;
+  }
+
+  @top-left {
+    content: string(group);
+    font-size: 11pt;
+  }
+
+  @bottom-right {
+    content: none;
+  }
+}
+
+/* These named-page overrides matter if pagedown assigns chapter pages. */
+@page chapter:left {
+  @top-right {
+    content: "Whitebark Pine Pest Guide pg."counter(page);
+    font-size: 11pt;
+  }
+
+  @top-left {
+    content: string(group);
+    font-size: 11pt;
+  }
+}
+
+@page chapter:right {
+  @top-right {
+    content: "Whitebark Pine Pest Guide pg."counter(page);
+    font-size: 11pt;
+  }
+
+  @top-left {
+    content: string(group);
+    font-size: 11pt;
+  }
+}
+
+@page chapter:first {
+  @top-right {
+    content: "Whitebark Pine Pest Guide pg."counter(page);
+    font-size: 11pt;
+  }
+
+  @top-left {
+    content: string(group);
+    font-size: 11pt;
+  }
+
+  @bottom-right {
+    content: none;
+  }
+}

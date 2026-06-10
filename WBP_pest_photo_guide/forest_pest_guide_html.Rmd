@@ -1,0 +1,275 @@
+---
+output:
+  pagedown::html_paged:
+    css: 
+      - default-page
+      - default
+      - ../shared/html/guide.css
+ 
+
+params:
+  table_path: "plantpestguide_content.csv"
+
+  # user-defined
+  unit: "KLMN"
+  group_col: "Observed pest on"
+
+  # expected columns
+  pest_col: "PEST"
+  latin_col: "LATIN_FULL"
+  symptom_col: "SYMPTOM"
+  hosts_all_col: "HOSTS_ALL"
+  description_col: "DESCRIPTION"
+  png_col: "PNG"
+---
+
+
+```{r setup, include=FALSE}
+library(readxl)
+library(dplyr)
+library(stringr)
+
+unit <- params$unit
+group_col <- params$group_col
+host_col <- paste0(unit, "_knownhosts")
+
+pests_raw <- read.csv(params$table_path)
+names(pests_raw) <- trimws(names(pests_raw))
+
+pests <- pests_raw %>%
+  dplyr::filter(stringr::str_detect(as.character(.data[[host_col]]), "[A-Za-z]"))
+```
+
+```{r debug, echo=FALSE, eval=F}
+# 
+params
+unit
+group_col
+host_col
+names(pests_raw)
+nrow(pests_raw)
+nrow(pests)
+table(pests[[group_col]], useNA = "ifany")
+```
+
+```{r include=FALSE}
+
+library(readxl)
+library(dplyr)
+library(stringr)
+library(glue)
+library(htmltools)
+library(knitr)
+
+unit <- params$unit
+group_col <- params$group_col
+
+host_col <- paste0(unit, "_knownhosts")
+
+pests_raw <- read.csv(
+  params$table_path
+)
+# spaces in colnames get converted weird and I'm sick of elegance so this is my hammer
+names(pests_raw) <- trimws(names(pests_raw))
+names(pests_raw) <- gsub("\ufeff", "", names(pests_raw), fixed = TRUE)
+names(pests_raw) <- gsub(".", " ", names(pests_raw), fixed = TRUE)  
+
+required_cols <- c(
+  params$pest_col,
+  params$latin_col,
+  params$symptom_col,
+  params$hosts_all_col,
+  params$description_col,
+  params$png_col,
+  group_col,
+  host_col
+)
+
+missing_cols <- setdiff(required_cols, names(pests_raw))
+
+if (length(missing_cols) > 0) {
+  stop(
+    "Missing required column(s): ",
+    paste(missing_cols, collapse = ", ")
+  )
+}
+
+pests <- pests_raw %>%
+  mutate(
+    .known_hosts = as.character(.data[[host_col]]),
+    .group = as.character(.data[[group_col]])
+  ) %>%
+  filter(str_detect(.known_hosts, "[A-Za-z]")) %>%
+  arrange(.group, .data[[params$pest_col]])
+
+groups <- split(pests, pests$.group)
+
+```
+
+
+```{css, echo=FALSE}
+/* {=css, echo=F} for quarto/qmd */
+
+
+body {
+  font-family: Arial, sans-serif;
+  font-size: 11pt;
+}
+
+/*
+.group-heading {
+  font-size: 18pt;
+  font-weight: bold;
+  margin: 0 0 0.25in 0;
+  border-bottom: 1px solid #999;
+}
+*/
+
+
+.pest-header {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0.1in;
+  margin-top: 0.1in;
+}
+
+.pest-header tr,
+.pest-header th,
+.pest-header td {
+  border: none !important;
+  background: transparent !important;
+}
+
+.pest-header-a {
+  width: 30%;
+  text-align: left;
+}
+
+.pest-header-b {
+  width: 70%;
+  text-align: right !important;
+}
+
+.pest-card {
+  min-height: 4.7in;
+  margin-bottom: 0.15in;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.guide-page {
+  break-after: page;
+  page-break-after: always;
+}
+
+.guide-page:last-child {
+  break-after: auto;
+  page-break-after: auto;
+}
+
+.group-string {
+  string-set: group content(text);
+  font-size: 1px;
+  line-height: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  color: transparent;
+  overflow: hidden;
+}
+
+.pest-name {
+  font-size: 12pt;
+  font-weight: bold;
+}
+
+.latin {
+  font-size: 11pt;
+  font-style: italic;
+  margin-top: 0.08in;
+}
+
+.symptom {
+  margin-top: 0.1in;
+}
+
+.pest-image {
+  width: 100%;
+  height: 3.0in;
+  object-fit: contain;
+  border: 1px solid #6aa84f;
+  margin-top: 0.15in;
+}
+
+.description {
+  font-size: 9pt;
+  margin-top: 0.1in;
+}
+
+```
+
+
+
+```{r render, results='asis', echo=FALSE}
+#, eval=FALSE}
+
+group_names <- names(groups)
+
+for (g in seq_along(group_names)) {
+
+  group_name <- group_names[[g]]
+  group_df <- groups[[group_name]]
+
+  page_starts <- seq(1, nrow(group_df), by = 2)
+
+  for (p in seq_along(page_starts)) {
+
+    start_i <- page_starts[p]
+    end_i <- min(start_i + 1, nrow(group_df))
+
+    cat(glue::glue("
+<div class='guide-page'>
+  <div class='group-string'>Observed pest on: {group_name}</div>
+"))
+
+    for (i in start_i:end_i) {
+
+      row <- group_df[i, ]
+
+      pest <- row[[params$pest_col]]
+      latin <- row[[params$latin_col]]
+      symptom <- row[[params$symptom_col]]
+      known_hosts <- row[[host_col]]
+      all_hosts <- row[[params$hosts_all_col]]
+      description <- row[[params$description_col]]
+      png_path <- row[[params$png_col]]
+
+      if (is.na(latin) || trimws(latin) == "") latin <- "&nbsp;"
+
+      cat(glue::glue("
+<div class='pest-card'>
+
+<table class='pest-header'>
+  <tr>
+    <td class='pest-header-a pest-name'>{pest}</td>
+    <td class='pest-header-b known-hosts'>known {unit} hosts: {known_hosts}</td>
+  </tr>
+  <tr>
+    <td class='pest-header-a latin'><em>{latin}</em></td>
+    <td class='pest-header-b all-hosts'>all hosts: {all_hosts}</td>
+  </tr>
+</table>
+
+<div class='symptom'>{symptom}</div>
+<img class='pest-image' src='{png_path}'>
+<div class='description'>{description}</div>
+
+</div>
+"))
+    }
+
+    cat("</div>")
+  }
+}
+
+```
