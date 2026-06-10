@@ -1,0 +1,184 @@
+/* stable pagedown rollback: body grouping/page breaks restored; dynamic headers still use string-set */
+
+.group-string {
+  string-set: group content(text);
+  height: 0;
+  line-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  color: transparent;
+  font-size: 1px;
+}
+
+@page {
+  size: letter;
+  margin: 0.3in;
+  margin-top: 0.45in;
+
+  @top-right {
+    content: "Whitebark Pine Pest Guide";
+    font-size: 11pt;
+  }
+
+  @top-center {
+    content: "Pg." counter(page);
+    font-size: 11pt;
+  }
+
+  @top-left {
+    content: string(group);
+    font-size: 11pt;
+  }
+}
+
+@page:first {
+  @top-right {
+    content: "Whitebark Pine Pest Guide pg." counter(page);
+    font-size: 11pt;
+  }
+
+  @top-left {
+    content: string(group);
+    font-size: 11pt;
+  }
+
+  @bottom-right {
+    content: none;
+  }
+}
+
+@page chapter:left {
+  @top-right {
+    content: "Whitebark Pine Pest Guide pg." counter(page);
+    font-size: 11pt;
+  }
+
+  @top-left {
+    content: string(group);
+    font-size: 11pt;
+  }
+}
+
+@page chapter:right {
+  @top-right {
+    content: "Whitebark Pine Pest Guide pg." counter(page);
+    font-size: 11pt;
+  }
+
+  @top-left {
+    content: string(group);
+    font-size: 11pt;
+  }
+}
+
+@page chapter:first {
+  @top-right {
+    content: "Whitebark Pine Pest Guide pg." counter(page);
+    font-size: 11pt;
+  }
+
+  @top-left {
+    content: string(group);
+    font-size: 11pt;
+  }
+
+  @bottom-right {
+    content: none;
+  }
+}
+
+body {
+  font-family: Arial, sans-serif;
+  font-size: 11pt;
+}
+
+.pest-header {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0.1in;
+  margin-top: 0.1in;
+}
+
+.pest-header tr,
+.pest-header th,
+.pest-header td {
+  border: none !important;
+  background: transparent !important;
+}
+
+.pest-header td:nth-child(2) {
+  text-align: left;
+}
+
+.pest-header-a {
+  width: 30%;
+  text-align: left;
+}
+
+.pest-header-b {
+  width: 70%;
+  text-align: right !important;
+}
+
+.pest-card {
+  min-height: 4.7in;
+  margin-bottom: 0.15in;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.pest-group {
+  break-before: page;
+  page-break-before: always;
+}
+
+.pest-group.first-group {
+  break-before: auto;
+  page-break-before: auto;
+}
+
+.pest-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 0.25in;
+  align-items: start;
+}
+
+.pest-name {
+  font-size: 12pt;
+  font-weight: bold;
+}
+
+.latin {
+  font-size: 11pt;
+  font-style: italic;
+  margin-top: 0.08in;
+}
+
+.hosts {
+  text-align: right;
+  font-size: 11pt;
+}
+
+.symptom {
+  margin-top: 0.1in;
+}
+
+.pest-image {
+  width: 100%;
+  height: 3.0in;
+  object-fit: contain;
+  border: 1px solid #6aa84f;
+  margin-top: 0.15in;
+}
+
+.description {
+  font-size: 9pt;
+  margin-top: 0.1in;
+}
+
+.page-break {
+  break-after: page;
+  page-break-after: always;
+}
