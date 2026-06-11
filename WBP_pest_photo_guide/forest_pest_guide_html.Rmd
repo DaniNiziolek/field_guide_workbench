@@ -151,8 +151,8 @@ body {
 }
 
 .pest-card {
-  min-height: 4.7in;
-  margin-bottom: 0.15in;
+  min-height: 4.5in;
+  margin-bottom: 0.05in;
   break-inside: avoid;
   page-break-inside: avoid;
 }
@@ -211,42 +211,33 @@ body {
 
 
 ```{r render, results='asis', echo=FALSE}
-#, eval=FALSE}
-
 group_names <- names(groups)
 
 for (g in seq_along(group_names)) {
 
   group_name <- group_names[[g]]
   group_df <- groups[[group_name]]
+  card_count <- 0
 
-  page_starts <- seq(1, nrow(group_df), by = 2)
-
-  for (p in seq_along(page_starts)) {
-
-    start_i <- page_starts[p]
-    end_i <- min(start_i + 1, nrow(group_df))
-
-    cat(glue::glue("
-<div class='guide-page'>
-  <div class='group-string'>Observed pest on: {group_name}</div>
+  cat(glue::glue("
+<div class='group-string'>{group_col}: {group_name}</div>
 "))
 
-    for (i in start_i:end_i) {
+  for (i in seq_len(nrow(group_df))) {
 
-      row <- group_df[i, ]
+    row <- group_df[i, ]
 
-      pest <- row[[params$pest_col]]
-      latin <- row[[params$latin_col]]
-      symptom <- row[[params$symptom_col]]
-      known_hosts <- row[[host_col]]
-      all_hosts <- row[[params$hosts_all_col]]
-      description <- row[[params$description_col]]
-      png_path <- row[[params$png_col]]
+    pest <- row[[params$pest_col]]
+    latin <- row[[params$latin_col]]
+    symptom <- row[[params$symptom_col]]
+    known_hosts <- row[[host_col]]
+    all_hosts <- row[[params$hosts_all_col]]
+    description <- row[[params$description_col]]
+    png_path <- row[[params$png_col]]
 
-      if (is.na(latin) || trimws(latin) == "") latin <- "&nbsp;"
+    if (is.na(latin) || trimws(latin) == "") latin <- "&nbsp;"
 
-      cat(glue::glue("
+    cat(glue::glue("
 <div class='pest-card'>
 
 <table class='pest-header'>
@@ -266,9 +257,16 @@ for (g in seq_along(group_names)) {
 
 </div>
 "))
-    }
 
-    cat("</div>")
+    card_count <- card_count + 1
+
+    if (card_count %% 2 == 0 && i < nrow(group_df)) {
+      cat("<div class='page-break'></div>")
+    }
+  }
+
+  if (g < length(group_names)) {
+    cat("<div class='page-break'></div>")
   }
 }
 

@@ -1,4 +1,134 @@
-/* stable pagedown rollback: body grouping/page breaks restored; dynamic headers still use string-set */
+.group-string {
+  string-set: group content(text);
+  height: 0;
+  line-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  color: transparent;
+  font-size: 1px;
+}
+
+@page {
+  size: letter;
+  margin: 0.3in;
+  margin-top: 0.45in;
+
+  @top-left {
+    content: string(group);
+    font-size: 11pt;
+    width: 4in;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  @top-right {
+    content: "Whitebark Pine Pest Guide pg." counter(page);
+    font-size: 11pt;
+    white-space: nowrap;
+  }
+
+  @bottom-right {
+    content: none;
+  }
+}
+
+@page:first {
+  @top-left {
+    content: string(group);
+    font-size: 11pt;
+    white-space: nowrap;
+  }
+
+  @top-right {
+    content: "Whitebark Pine Pest Guide pg." counter(page);
+    font-size: 11pt;
+    white-space: nowrap;
+  }
+
+  @bottom-right {
+    content: none;
+  }
+}
+
+
+body {
+  font-family: Arial, sans-serif;
+  font-size: 11pt;
+  counter-reset: none;
+}
+
+.pest-header {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0.1in;
+  margin-top: 0.1in;
+}
+
+.pest-header tr,
+.pest-header th,
+.pest-header td {
+  border: none !important;
+  background: transparent !important;
+}
+
+.pest-header-a {
+  width: 30%;
+  text-align: left;
+}
+
+.pest-header-b {
+  width: 70%;
+  text-align: right !important;
+}
+
+.pest-card {
+  min-height: 4.7in;
+  margin-bottom: 0.05in;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.pest-name {
+  font-size: 12pt;
+  font-weight: bold;
+}
+
+.latin {
+  font-size: 11pt;
+  font-style: italic;
+  margin-top: 0.08in;
+}
+
+.symptom {
+  margin-top: 0.1in;
+}
+
+.pest-image {
+  width: 100%;
+  height: 3.0in;
+  object-fit: contain;
+  border: 1px solid #6aa84f;
+  margin-top: 0.15in;
+}
+
+.description {
+  font-size: 9pt;
+  margin-top: 0.1in;
+}
+
+.page-break {
+  break-after: page;
+  page-break-after: always;
+}
+
+
+
+
+
+
+
+/* OLD
 
 .group-string {
   string-set: group content(text);
@@ -17,14 +147,10 @@
   margin-top: 0.45in;
 
   @top-right {
-    content: "Whitebark Pine Pest Guide";
+    content: "Whitebark Pine Pest Guide pg." counter(page);
     font-size: 11pt;
   }
 
-  @top-center {
-    content: "Pg." counter(page);
-    font-size: 11pt;
-  }
 
   @top-left {
     content: string(group);
@@ -181,4 +307,20 @@ body {
 .page-break {
   break-after: page;
   page-break-after: always;
+}
+
+.page-break::before {
+  content: "PAGE BREAK HERE";
+  display: block;
+  font-size: 20pt;
+  color: red;
+  border: 3px solid red;
+}
+
+.main .level1:first-child h1 {
+  counter-reset: none;
+}
+
+body {
+  counter-reset: none;
 }
