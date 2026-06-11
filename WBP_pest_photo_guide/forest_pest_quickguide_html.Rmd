@@ -1,0 +1,157 @@
+---
+output:
+  pagedown::html_paged:
+    css:
+      - default-page
+      - default
+      - ../shared/html/guide.css
+
+params:
+  table_path: "plantpestguide_content.csv"
+
+  unit: "KLMN"
+  image_col: "PNG_small"
+
+  pest_col: "PEST"
+  latin_col: "LATIN_FULL"
+  description_col: "DESCRIPTION"
+
+---
+
+```{r include=FALSE}
+library(dplyr) 
+library(stringr) 
+library(glue) 
+
+
+unit <- params$unit 
+
+host_col <- paste0(unit, "_knownhosts") 
+
+pests_raw <- read.csv( params$table_path, stringsAsFactors = FALSE ) 
+names(pests_raw) <- trimws(names(pests_raw)) 
+names(pests_raw) <- gsub("\ufeff", "", names(pests_raw), fixed = TRUE) 
+names(pests_raw) <- gsub(".", " ", names(pests_raw), fixed = TRUE) 
+
+
+required_cols <- c( params$pest_col, 
+                    params$latin_col, 
+                    params$description_col, 
+                    params$image_col, host_col, "HOSTS_ALL" ) 
+
+missing_cols <- setdiff(required_cols, names(pests_raw)) 
+
+if (length(missing_cols) > 0) { 
+  stop( "Missing required column(s): ", 
+        paste(missing_cols, collapse = ", ") ) 
+  } 
+
+pests <- pests_raw %>% 
+  mutate( .known_hosts = as.character(.data[[host_col]]) ) %>% 
+  filter(str_detect(.known_hosts, "[A-Za-z]")) %>% 
+  arrange(.data[[params$pest_col]])
+```
+
+```{css,echo=F}
+.unit-string {
+  string-set: guide_title content(text);
+  height: 0;
+  overflow: hidden;
+  font-size: 0;
+}
+
+@page {
+
+  margin: 0.2in;
+
+  @top-left {
+    content: string(guide_title);
+    font-size: 12pt;
+    font-weight: bold;
+  }
+
+
+  @bottom-center {
+    content: "(for more diagnostic tips and photos see the expanded guide)";
+    font-size: 8pt;
+    font-style: italic;
+  }
+}
+
+
+body { 
+font-family: Arial, sans-serif; 
+font-size: 10pt; } 
+
+.pest-card { 
+display: grid; 
+grid-template-columns: 40% 60%; 
+column-gap: 0.25in; 
+min-height: 1.6in; 
+margin-bottom: 0.03in; 
+break-inside: avoid; 
+page-break-inside: avoid; } 
+
+.pest-image { width: 100%; max-height: 1.5in; object-fit: contain; } 
+
+.pest-name { font-size: 11pt; font-weight: bold; } 
+
+.latin { font-style: italic; } .hosts { margin-top: 0.08in; font-size: 8pt; } 
+
+.description { margin-top: 0.10in; font-size: 9pt; line-height: 1.2; } 
+
+.page-break { break-after: page; page-break-after: always; }
+
+```
+
+```{r render, results='asis', echo=FALSE}
+
+for (i in seq_len(nrow(pests))) { 
+  row <- pests[i, ] 
+  
+  pest <- row[[params$pest_col]] 
+  latin <- row[[params$latin_col]] 
+  description <- row[[params$description_col]] 
+  
+  known_hosts <- row[[host_col]] 
+  all_hosts <- row[["HOSTS_ALL"]] 
+  
+  png_path <- row[[params$image_col]] 
+  
+  if (is.na(latin) || trimws(latin) == "") { latin <- "&nbsp;" } 
+  
+  cat(glue(" 
+           <div class='pest-card'> 
+           
+           <div> 
+           <img class='pest-image' src='{png_path}'> 
+           </div> 
+           
+           <div> 
+           
+           <div class='pest-name'> 
+           {pest} 
+           <span class='latin'>({latin})</span> 
+           </div> 
+           
+           <div class='hosts'> 
+           Hosts: {known_hosts} 
+           (may occur on {all_hosts}) 
+           </div> 
+           
+           <div class='description'> 
+           {description} 
+           </div> 
+           
+           </div>
+
+           </div>
+           
+           ")) 
+  
+  if (i %% 5 == 0 && i < nrow(pests)) { 
+    cat("<div class='page-break'></div>") 
+  } 
+}
+```
+
