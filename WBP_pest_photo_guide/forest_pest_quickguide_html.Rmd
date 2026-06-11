@@ -53,28 +53,69 @@ pests <- pests_raw %>%
 ```
 
 ```{css,echo=F}
-.unit-string {
-  string-set: guide_title content(text);
-  height: 0;
-  overflow: hidden;
-  font-size: 0;
-}
 
-@page {
 
+@page:first {
   margin: 0.2in;
-
+  
   @top-left {
-    content: string(guide_title);
-    font-size: 12pt;
-    font-weight: bold;
+    content: none
+  }
+  
+  @top-center {
+    content: none;
   }
 
+  @top-right {
+    content: "Whitebark Pine Pest Guide";
+    font-size: 11pt;
+    white-space: nowrap;
+  }
+
+  @bottom-left {
+    content: none;
+  }
 
   @bottom-center {
     content: "(for more diagnostic tips and photos see the expanded guide)";
     font-size: 8pt;
     font-style: italic;
+  }
+  
+  @bottom-right {
+    content: none;
+  }
+}
+
+@page {
+  margin: 0.2in;
+  
+  @top-left {
+    content: none
+  }
+  
+  @top-center {
+    content: none;
+  }
+
+  @top-right {
+    content: "Whitebark Pine Pest Guide";
+    font-size: 11pt;
+    white-space: nowrap;
+  }
+
+  @bottom-left {
+    content: none;
+  }
+
+  @bottom-center {
+    content: "(for more diagnostic tips and photos see the expanded guide)";
+    font-size: 8pt;
+    font-style: italic;
+  }
+  
+  @bottom-right {
+    content: none;
   }
 }
 
@@ -84,15 +125,21 @@ font-family: Arial, sans-serif;
 font-size: 10pt; } 
 
 .pest-card { 
+aligh-items:start;
 display: grid; 
-grid-template-columns: 40% 60%; 
+grid-template-columns: 50% 45%; 
 column-gap: 0.25in; 
 min-height: 1.6in; 
-margin-bottom: 0.03in; 
+margin-bottom: 0.08in; 
 break-inside: avoid; 
 page-break-inside: avoid; } 
 
-.pest-image { width: 100%; max-height: 1.5in; object-fit: contain; } 
+.pest-image {display:block;  width: 100%; max-height: 1.93in; object-fit: contain; margin: 0 !important; padding:0 !important } 
+.pest-image-wrap {
+  align-self: start;
+  margin: 0 !important;
+  padding: 0 !important;
+}
 
 .pest-name { font-size: 11pt; font-weight: bold; } 
 
@@ -101,6 +148,18 @@ page-break-inside: avoid; }
 .description { margin-top: 0.10in; font-size: 9pt; line-height: 1.2; } 
 
 .page-break { break-after: page; page-break-after: always; }
+
+
+/* force compliance with my fucking formatting rules oh my god! */
+.pest-card .hosts {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.pest-card .description {
+  margin-top: 4px !important;
+  margin-bottom: 0 !important;
+}
 
 ```
 
@@ -123,26 +182,12 @@ for (i in seq_len(nrow(pests))) {
   cat(glue(" 
            <div class='pest-card'> 
            
-           <div> 
-           <img class='pest-image' src='{png_path}'> 
-           </div> 
+           <div class='pest-image-wrap'><img class='pest-image' src='{png_path}'> </div> 
            
            <div> 
-           
-           <div class='pest-name'> 
-           {pest} 
-           <span class='latin'>({latin})</span> 
-           </div> 
-           
-           <div class='hosts'> 
-           Hosts: {known_hosts} 
-           (may occur on {all_hosts}) 
-           </div> 
-           
-           <div class='description'> 
-           {description} 
-           </div> 
-           
+           <div class='pest-name'>{pest} <span class='latin'>({latin})</span></div>
+           <div class='hosts'>Hosts: {known_hosts} (may occur on {all_hosts})</div>
+           <div class='description'>{description}</div>
            </div>
 
            </div>
